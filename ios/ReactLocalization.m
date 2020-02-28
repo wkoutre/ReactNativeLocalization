@@ -25,6 +25,7 @@
 
 @interface ReactLocalization ()
 -(NSString*) getCurrentLanguage;
+-(NSString*) getCurrentRegion;
 -(NSString*) getUserLocale;
 @end
 
@@ -45,6 +46,18 @@
     return [[NSLocale preferredLanguages] objectAtIndex:0];
 }
 
+-(NSString*) getCurrentRegion{
+    if (!@available(iOS 10.0, *)) {
+        NSString *userRegion = [self getUserRegion];
+        if (userRegion) {
+            return userRegion;
+        }
+    }
+
+    // Fallback
+    return [[NSLocale preferredLanguages] objectAtIndex:0];
+}
+
 -(NSString*) getUserLocale {
     NSArray* locales = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"];
     if (locales == nil ) { return nil; }
@@ -52,6 +65,15 @@
 
     NSString* userLocale = locales[0];
     return userLocale;
+}
+
+-(NSString*) getUserRegion {
+    NSArray* regions = [[NSUserDefaults standardUserDefaults] objectForKey:@"UserRegion"];
+    if (regions == nil ) { return nil; }
+    if ([regions count] == 0) { return nil; }
+
+    NSString* userRegion = regions[0];
+    return userRegion;
 }
 
 
@@ -69,7 +91,7 @@ RCT_EXPORT_METHOD(getLanguage:(RCTResponseSenderBlock)callback){
  * Method called from javascript; return a Promise which resolves in case of successfully setting the language constant
  */
 RCT_EXPORT_METHOD(setAppLanguage:(NSString *)languageCode
-submitOrderWithResolver:(RCTPromiseResolveBlock)resolve
+resultResolved:(RCTPromiseResolveBlock)resolve
                   resultRejecter:(RCTPromiseRejectBlock)reject){
     [[NSUserDefaults standardUserDefaults] setObject:[NSArray arrayWithObjects:languageCode, nil] forKey:@"AppleLanguages"];
 
@@ -78,13 +100,30 @@ submitOrderWithResolver:(RCTPromiseResolveBlock)resolve
     resolve(languageCode);
 }
 
+/*
+ * Method called from javascript; return a Promise which resolves in case of successfully setting the region constant
+ */
+RCT_EXPORT_METHOD(setAppRegion:(NSString *)region
+resultResolved:(RCTPromiseResolveBlock)resolve
+                  resultRejecter:(RCTPromiseRejectBlock)reject){
+    [[NSUserDefaults standardUserDefaults] setObject:[NSArray arrayWithObjects:region, nil] forKey:@"UserRegion"];
+
+    NSLog(@"New Region: %@", region);
+
+    resolve(region);
+}
+
 
 /*
- * Expose the language directly to javascript avoiding the callback
+ * Expose the language and region directly to javascript avoiding the callback
  */
 - (NSDictionary *)constantsToExport
 {
-    return @{ @"language": [self getCurrentLanguage]};
+    return @{
+        @"language": [self getCurrentLanguage],
+        @"region": [self getCurrentRegion]
+    };
+
 }
 
 +(BOOL)requiresMainQueueSetup
