@@ -68,11 +68,11 @@
 }
 
 -(NSString*) getUserRegion {
-    NSArray* regions = [[NSUserDefaults standardUserDefaults] objectForKey:@"UserRegion"];
-    if (regions == nil ) { return nil; }
-    if ([regions count] == 0) { return nil; }
+    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+    NSString* userRegion = [prefs stringForKey:@"UserRegion"];
 
-    NSString* userRegion = regions[0];
+    if (userRegion == nil ) { return nil; }
+
     return userRegion;
 }
 
@@ -106,7 +106,7 @@ resultResolved:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(setAppRegion:(NSString *)region
 resultResolved:(RCTPromiseResolveBlock)resolve
                   resultRejecter:(RCTPromiseRejectBlock)reject){
-    [[NSUserDefaults standardUserDefaults] setObject:[NSArray arrayWithObjects:region, nil] forKey:@"UserRegion"];
+    [[NSUserDefaults standardUserDefaults] setObject:region forKey:@"UserRegion"];
 
     NSLog(@"New Region: %@", region);
 
