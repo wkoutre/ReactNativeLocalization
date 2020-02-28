@@ -40,7 +40,7 @@
             return userLocale;
         }
     }
-    
+
     // Fallback
     return [[NSLocale preferredLanguages] objectAtIndex:0];
 }
@@ -52,7 +52,7 @@
 
     NSString* userLocale = locales[0];
     return userLocale;
-} 
+}
 
 
 
@@ -64,6 +64,20 @@ RCT_EXPORT_METHOD(getLanguage:(RCTResponseSenderBlock)callback){
     NSLog(@"Language: %@", language);
     callback(@[[NSNull null], language]);
 }
+
+/*
+ * Method called from javascript; return a Promise which resolves in case of successfully setting the language constant
+ */
+RCT_EXPORT_METHOD(setAppLanguage:(NSString *)languageCode
+submitOrderWithResolver:(RCTPromiseResolveBlock)resolve
+                  resultRejecter:(RCTPromiseRejectBlock)reject){
+    [[NSUserDefaults standardUserDefaults] setObject:[NSArray arrayWithObjects:languageCode, nil] forKey:@"AppleLanguages"];
+
+    NSLog(@"New Language Code: %@", languageCode);
+
+    resolve(languageCode);
+}
+
 
 /*
  * Expose the language directly to javascript avoiding the callback

@@ -3,6 +3,7 @@ package com.babisoft.ReactNativeLocalization;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -43,17 +44,15 @@ public class ReactNativeLocalization extends ReactContextBaseJavaModule {
         if (userLocale != null) {
             return userLocale;
         }
-        
+
         Locale current = getReactApplicationContext().getResources().getConfiguration().locale;
         return current.getLanguage() + "-" + current.getCountry();
     }
-
 
     public String getUserLocale() {
         return getPreferences().getString("locale_override", null);
     }
 
-    
     /**
      * Export to Javascript the variable language containing the current language
      *
@@ -64,6 +63,22 @@ public class ReactNativeLocalization extends ReactContextBaseJavaModule {
         final Map<String, Object> constants = new HashMap<>();
         constants.put(LANGUAGE, getCurrentLanguage());
         return constants;
+    }
+
+    /*
+     * Export a method callable from javascript that a Promise which resolves in
+     * case of successfully setting the language constant
+     */
+    @ReactMethod
+    public void setAppLanguage(String languageCode, final Promise promise) {
+        SharedPreferences.Editor editor = getEditor();
+
+        editor.putString("locale_override", languageCode);
+        editor.commit();
+
+        System.out.println("Successfully committed locale_override preference of: " + languageCode);
+
+        promise.resolve(languageCode);
     }
 
     /**
@@ -84,6 +99,7 @@ public class ReactNativeLocalization extends ReactContextBaseJavaModule {
     private SharedPreferences getPreferences() {
         return getReactApplicationContext().getSharedPreferences("react-native", Context.MODE_PRIVATE);
     }
+
     private SharedPreferences.Editor getEditor() {
         return getPreferences().edit();
     }
