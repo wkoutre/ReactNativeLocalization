@@ -217,7 +217,9 @@ import LocalizedString from "react-native-localization";
 
 - setLanguage(languageCode) - to force manually a particular language
 - setAppLanguage(languageCode: string): Promise<string> - sets the `language` constant on the native layer, enabling synchronous logic to be used with `NativeModules.ReactLocalization.language`
+- setAppRegion(regionCode: string): Promise<string> - sets the `region` constant on the native layer, enabling synchronous logic to be used with `NativeModules.ReactLocalization.region`
 - getLanguage() - to get the current displayed language
+- getRegion() - to get the current app region
 - getInterfaceLanguage() - to get the current device interface language
 - formatString() - to format the passed string replacing its placeholders with the other arguments strings
 
