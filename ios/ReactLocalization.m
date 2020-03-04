@@ -35,31 +35,27 @@
  * Private implementation - return the language and the region like 'en-US' if iOS >= 10 otherwise just the language
  */
 -(NSString*) getCurrentLanguage{
-    if (!@available(iOS 10.0, *)) {
-        NSString *userLocale = [self getUserLocale];
-        if (userLocale) {
-            return userLocale;
-        }
-    }
 
     // Fallback
     return [[NSLocale preferredLanguages] objectAtIndex:0];
 }
 
 -(NSString*) getCurrentRegion{
-    if (!@available(iOS 10.0, *)) {
-        NSString *userRegion = [self getUserRegion];
-        if (userRegion) {
-            return userRegion;
-        }
+    NSString *userRegion = [self getUserRegion];
+
+    NSLog(@"User region from getCurrentRegion: %@", userRegion);
+
+    if (userRegion) {
+        return userRegion;
     }
 
     // Fallback
-    return [[NSLocale preferredLanguages] objectAtIndex:0];
+     return [[NSLocale preferredLanguages] objectAtIndex:0];
 }
 
 -(NSString*) getUserLocale {
-    NSArray* locales = [[NSUserDefaults standardUserDefaults] objectForKey:@"AppleLanguages"];
+    NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
+    NSArray* locales = [prefs objectForKey:@"AppleLanguages"];
     if (locales == nil ) { return nil; }
     if ([locales count] == 0) { return nil; }
 
@@ -71,6 +67,8 @@
     NSUserDefaults *prefs = [NSUserDefaults standardUserDefaults];
     NSString* userRegion = [prefs stringForKey:@"UserRegion"];
 
+    NSLog(@"User Region: %@", userRegion);
+
     if (userRegion == nil ) { return nil; }
 
     return userRegion;
@@ -79,12 +77,15 @@
 
 
 /*
- * Method called from javascript with a callback in case of success
+ * Method called from javascript; return a Promise which resolves a string
  */
-RCT_EXPORT_METHOD(getLanguage:(RCTResponseSenderBlock)callback){
-    NSString * language =  [self getCurrentLanguage];
-    NSLog(@"Language: %@", language);
-    callback(@[[NSNull null], language]);
+RCT_EXPORT_METHOD(getLanguage:(RCTPromiseResolveBlock)resolve
+                  resultRejecter:(RCTPromiseRejectBlock)reject){
+    NSString* language =  [self getCurrentLanguage];
+
+    NSLog(@"getLanguage: %@", language);
+
+    resolve(language);
 }
 
 /*
@@ -106,9 +107,27 @@ resultResolved:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(setAppRegion:(NSString *)region
 resultResolved:(RCTPromiseResolveBlock)resolve
                   resultRejecter:(RCTPromiseRejectBlock)reject){
+    NSLog(@"setAppRegion, 'region' Param: %@", region);
+
     [[NSUserDefaults standardUserDefaults] setObject:region forKey:@"UserRegion"];
 
-    NSLog(@"New Region: %@", region);
+    NSString* newRegion = [self getUserRegion];
+
+    NSLog(@"setAppRegion, 'newRegion': %@", newRegion);
+
+
+    resolve(region);
+}
+
+/*
+ * Method called from javascript; return a Promise which resolves in case of successfully setting the region constant
+ */
+RCT_EXPORT_METHOD(getAppRegion:(RCTPromiseResolveBlock)resolve
+                  resultRejecter:(RCTPromiseRejectBlock)reject){
+
+    NSString* region = [self getUserRegion];
+
+    NSLog(@"getAppRegion, 'region': %@", region);
 
     resolve(region);
 }
